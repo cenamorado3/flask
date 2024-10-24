@@ -4,15 +4,7 @@ class NutritionAdapter:
     def request_data(self):
         json_set = requests.get('https://data.cdc.gov/api/views/hn4x-zwk7/rows.json').json()
         columns = [col['fieldName'] for col in json_set['meta']['view']['columns']]
-
-        records = []
-        for data in json_set['data']:
-            record = {}
-            for i in range(len(columns)):
-                record[columns[i]] = data[i]
-            records.append(record)
-
-        return records
+        return [dict(zip(columns, data)) for data in json_set['data']]
 
 
 
