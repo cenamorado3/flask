@@ -1,59 +1,37 @@
 import requests
+import json
 from sqlalchemy import create_engine, MetaData, Table, Column, Integer, String, insert
+import psycopg2
+
 class NutritionAdapter:
     def request_data(self):
         json_set = requests.get('https://data.cdc.gov/api/views/hn4x-zwk7/rows.json').json()
         columns = [col['fieldName'] for col in json_set['meta']['view']['columns']]
-        return [dict(zip(columns, data)) for data in json_set['data']]
+        records = [dict(zip(columns, data)) for data in json_set['data']]
+        
+        geoloc = []
+        for record in records:
+            if(record['geolocation'] is not None):
+                geo_set = json.loads(record['geolocation'][0])
+                print(geo_set)
+                geoloc.append({
+                    ":id": record[':id'],
+                    "Address": geo_set['address'],
+                    "City": geo_set['city'],
+                    "State": geo_set['state'],
+                    "Zip": geo_set['zip'],
+                    "Latitude": record['geolocation'][1],
+                    "Longitude": record['geolocation'][2]
+                })
+            del record['geolocation']
 
 
+        engine = create_engine('postgresql://user:pass`@127.0.0.1:5432/flask')
 
-    def _create_table(self):
-        engine = create_engine('postgresql://user:password@host:port/database')
-
-        metadata = MetaData()
-        users = Table('DNPAO', metadata,
-            Column('id', Integer, primary_key=True),
-            Column(':sid', String),
-            Column(':id', String),
-            Column(':position', String),
-            Column(':created_at', String),
-            Column(':created_meta', String),
-            Column(':updated_at', String),
-            Column(':updated_meta', String),
-            Column(':meta', String),
-            Column('yearstart', String),
-            Column('yearend', String),
-            Column('locationabbr', String),
-            Column('locationdesc', String),
-            Column('datasource', String),
-            Column('class', String),
-            Column('topic', String),
-            Column('question', String),
-            Column('data_value_unit', String),
-            Column('data_value_type', String),
-            Column('data_value', String),
-            Column('data_value_alt', String),
-            Column('data_value_footnote_symbol', String),
-            Column('data_value_footnote', String),
-            Column('low_confidence_limit', String),
-            Column('high_confidence_limit', String),
-            Column('sample_size', String),
-            Column('total', String),
-            Column('age_years', String),
-            Column('education', String),
-            Column('gender', String),
-            Column('income', String),
-            Column('race_ethnicity', String),
-            Column('geolocation', String),
-            Column('classid', String),
-            Column('topicid', String),
-            Column('questionid', String),
-            Column('datavaluetypeid', String),
-            Column('locationid', String),
-            Column('stratificationcategory1', String),
-            Column('stratification1', String),
-            Column('stratificationcategoryid1', String),
-            Column('stratificationid1', String)
-        )
-        metadata.create_all(engine)
+        with engine.connect() as con:
+            dnpao = Table('dnpao', MetaData(), autoload_with=engine)
+            geolocation = Table('geolocation', MetaData(), autoload_with=engine)
+            con.execute(dnpao.insert(), records)
+            con.execute(geolocation.insert(), geoloc)
+            con.commit()
+        return records

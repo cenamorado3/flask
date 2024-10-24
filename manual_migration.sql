@@ -5,7 +5,7 @@
 CREATE TABLE DNPAO(
 ID int GENERATED ALWAYS AS IDENTITY NOT NULL PRIMARY KEY,
 ":sid" text,
-":id" text,
+":id" text UNIQUE,
 ":position" text,
 ":created_at" text,
 ":created_meta" text,
@@ -35,7 +35,6 @@ ID int GENERATED ALWAYS AS IDENTITY NOT NULL PRIMARY KEY,
 "gender" text,
 "income" text,
 "race_ethnicity" text,
-"geolocation" text,
 "classid" text,
 "topicid" text,
 "questionid" text,
@@ -51,12 +50,16 @@ CREATE UNIQUE INDEX ID_index ON DNPAO (ID);
 CLUSTER DNPAO USING ID_index;
 
 
-
+--CREATE TABLE FOR GEOLOCATION
 CREATE TABLE Geolocation(
 ID int GENERATED ALWAYS AS IDENTITY NOT NULL PRIMARY KEY,
-Address text,
-Latitude text,
-Longitude text
+":id" text references dnpao(":id"),
+"Address" text,
+"City" text,
+"State" text,
+"Zip" text,
+"Latitude" text,
+"Longitude" text,
 );
 
 CREATE UNIQUE INDEX Geolocation_ID_index ON Geolocation (ID);
