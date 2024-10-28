@@ -1,7 +1,8 @@
 import requests
 import json
-from sqlalchemy import create_engine, MetaData, Table, Column, Integer, String, insert
 import psycopg2
+from persistance.engine import Engine
+from sqlalchemy import insert, delete
 
 class NutritionAdapter:
     def request_data(self):
@@ -13,7 +14,6 @@ class NutritionAdapter:
         for record in records:
             if(record['geolocation'] is not None):
                 geo_set = json.loads(record['geolocation'][0])
-                print(geo_set)
                 geoloc.append({
                     ":id": record[':id'],
                     "Address": geo_set['address'],
@@ -26,12 +26,11 @@ class NutritionAdapter:
             del record['geolocation']
 
 
-        engine = create_engine('postgresql://user:pass`@127.0.0.1:5432/flask')
+        engine = Engine()
+        engine.session.execute(delete(engine.base.classes.dnpao))#truncate...should casade delete geolocation
 
-        with engine.connect() as con:
-            dnpao = Table('dnpao', MetaData(), autoload_with=engine)
-            geolocation = Table('geolocation', MetaData(), autoload_with=engine)
-            con.execute(dnpao.insert(), records)
-            con.execute(geolocation.insert(), geoloc)
-            con.commit()
+        engine.session.execute(insert(engine.base.classes.dnpao), records)
+        engine.session.execute(insert(engine.base.classes.geolocation), geoloc)
+
+        engine.session.commit()
         return records

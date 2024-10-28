@@ -53,13 +53,13 @@ CLUSTER DNPAO USING ID_index;
 --CREATE TABLE FOR GEOLOCATION
 CREATE TABLE Geolocation(
 ID int GENERATED ALWAYS AS IDENTITY NOT NULL PRIMARY KEY,
-":id" text references dnpao(":id"),
+":id" text references dnpao(":id") ON DELETE CASCADE,
 "Address" text,
 "City" text,
 "State" text,
 "Zip" text,
 "Latitude" text,
-"Longitude" text,
+"Longitude" text
 );
 
 CREATE UNIQUE INDEX Geolocation_ID_index ON Geolocation (ID);
