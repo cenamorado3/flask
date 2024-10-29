@@ -1,4 +1,4 @@
-
+CREATE DATABASE flask;
 
 --CREATE TABLE FOR 
 --https://catalog.data.gov/dataset/nutrition-physical-activity-and-obesity-behavioral-risk-factor-surveillance-system
