@@ -1,8 +1,8 @@
 This project is a simple/minimal REST API written in Python served using Flask which leverages a Postgres database.
 
-To run this project, first a Postgres would need to be installed, the manual migration can be run against the database as this project takes a database first approach.
+To run this project, first Postgres would need to be installed, the manual migration can then be run as this project takes a database first approach.
 
-A simple pip install should handle dependencies on the Python.
+A simple pip install should handle Python dependencies.
 
 Run the app with: flask run
 
